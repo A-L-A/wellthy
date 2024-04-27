@@ -1,25 +1,56 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.css";
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+
+//Pages
+import AboutUs from "./pages/AboutUs";
+import Goals from "./pages/Goals";
+
+//Components
 import Navbar from "./components/Navbar";
-import Login from "./components/Login"; 
-import SignUp from "./components/SignUp"; 
-import Home from "./pages/Home"; 
-import Events from "./pages/Events"; 
-import Footer from "./components/Footer"; 
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Profile from "./components/Profile";
+import Footer from "./components/Footer";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    window.location.href = "/login";
+  };
+
   return (
     <Router>
-      <div>
-        <Navbar />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/events" element={<Events/>} />
-        </Routes>
-      </div>
+      <Navbar isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+      <Routes>
+        <Route path="/" element={<AboutUs />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route
+          path="/goals"
+          element={isLoggedIn ? <Goals /> : <Navigate to="/login" />}
+        />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={<Login setIsLoggedIn={setIsLoggedIn} />}
+        />
+        <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
+      </Routes>
       <Footer />
     </Router>
   );
