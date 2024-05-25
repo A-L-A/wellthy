@@ -1,32 +1,54 @@
 const express = require("express");
 const router = express.Router();
-const eventController = require("../controllers/eventController");
+
+// Controllers
+const goalController = require("../controllers/goalController");
 const authController = require("../controllers/authController");
-const alumniController = require("../controllers/alumniController");
-const adminController = require("../controllers/adminController"); // Corrected import
+const userController = require("../controllers/userController");
 
+// Middleware
+const { protect } = require("../middleware/protectMiddleware");
+const { permit } = require("../middleware/permitMiddleware");
 
-// Event routes
-router.get('/events', eventController.getAllEvents);
-router.post('/events', eventController.createEvent);
-router.put('/events/:id', eventController.updateEvent);
-router.delete('/events/:id', eventController.deleteEvent);
+// Protected routes for admin
+router.get(
+  "/goals",
+  protect,
+  permit(["admin", "staff"]),
+  goalController.getAllGoals
+);
+router.post(
+  "/goals",
+  protect,
+  permit(["admin", "staff"]),
+  goalController.createGoal
+);
+router.put(
+  "/goals/:id",
+  protect,
+  permit(["admin", "staff"]),
+  goalController.updateGoal
+);
+router.delete(
+  "/goals/:id",
+  protect,
+  permit(["admin", "staff"]),
+  goalController.deleteGoal
+);
 
-// Auth routes
-router.post("/signup", authController.registerUser);
+// Authentication routes
+router.post("/register",protect, permit("admin"), authController.registerUser);
 router.post("/login", authController.loginUser);
-router.get("/logout", authController.logoutUser);
 
-// Alumni routes
-router.get("/alumni", alumniController.getAllAlumni);
-router.post("/alumni", alumniController.createAlumni);
-router.put("/alumni/:id", alumniController.updateAlumni);
-router.delete("/alumni/:id", alumniController.deleteAlumni);
-
-// Admin routes
-router.get("/admin", adminController.getAllAdmin); 
-router.post("/admin", adminController.createAdmin); 
-router.put("/admin/:id", adminController.updateAdmin); 
-router.delete("/admin/:id", adminController.deleteAdmin); 
+// User management routes
+router.get("/users", protect, permit("admin"), userController.getAllUsers);
+router.put("/users/:id", protect, permit("admin"), userController.updateUser);
+router.post("/users", protect, permit("admin"), userController.createUser);
+router.delete(
+  "/users/:id",
+  protect,
+  permit("admin"),
+  userController.deleteUser
+);
 
 module.exports = router;
