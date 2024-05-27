@@ -10,34 +10,23 @@ const userController = require("../controllers/userController");
 const { protect } = require("../middleware/protectMiddleware");
 const { permit } = require("../middleware/permitMiddleware");
 
-// Protected routes for admin
-router.get(
-  "/goals",
-  protect,
-  permit(["admin", "staff"]),
-  goalController.getAllGoals
-);
-router.post(
-  "/goals",
-  protect,
-  permit(["admin", "staff"]),
-  goalController.createGoal
-);
-router.put(
-  "/goals/:id",
-  protect,
-  permit(["admin", "staff"]),
-  goalController.updateGoal
-);
-router.delete(
-  "/goals/:id",
-  protect,
-  permit(["admin", "staff"]),
-  goalController.deleteGoal
-);
+// Helper function to check if the user is an admin or staff
+const isAdminOrStaff = (req, res, next) => {
+  if (req.user.role === "admin" || req.user.role === "staff") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied" });
+  }
+};
+
+// Protected routes for admin and staff
+router.get("/goals", protect, isAdminOrStaff, goalController.getAllGoals);
+router.post("/goals", protect, isAdminOrStaff, goalController.createGoal);
+router.put("/goals/:id", protect, isAdminOrStaff, goalController.updateGoal);
+router.delete("/goals/:id", protect, isAdminOrStaff, goalController.deleteGoal);
 
 // Authentication routes
-router.post("/register",protect, permit("admin"), authController.registerUser);
+router.post("/register", protect, permit("admin"), authController.registerUser);
 router.post("/login", authController.loginUser);
 
 // User management routes
